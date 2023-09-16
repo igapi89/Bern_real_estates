@@ -1,7 +1,14 @@
 <template>
   <main>
+    <h1 :style="{ fontWeight: 'bold' }">Bern - Real estates map</h1>
     <l-map
-      :style="{ height: '768px', width: '1024px', border: '1px dotted black' }"
+      :style="{
+        height: '768px',
+        width: '1024px',
+        maxWidth: '100%',
+        marginTop: '20px',
+        border: '1px dotted black'
+      }"
       :use-global-leaflet="false"
       :zoom="zoom"
       :center="center"
@@ -14,17 +21,35 @@
         @mouseover="openPopup($event)"
       >
         <l-icon :iconSize="[100, 20]">
-          <div class="marker-wrapper">${{ marker.price }}</div>
+          <div class="marker-wrapper">€{{ marker.price }}</div>
         </l-icon>
         <l-popup>
-          <div>{{ marker.publicationTitle }}</div>
-          <p>{{ marker.pictures.length }}</p>
-
-          <swiper :navigation="true" :modules="modules" :slides-per-view="1" :space-between="20">
+          <h2 :style="{ maxWidth: '95%' }">{{ marker.publicationTitle }}</h2>
+          <swiper
+            :navigation="true"
+            :modules="modules"
+            :slides-per-view="1"
+            :space-between="20"
+            :style="{ marginTop: '20px' }"
+          >
             <swiper-slide v-for="(picture, pictureIndex) in marker.pictures" :key="pictureIndex">
-              <img :src="picture.Url" alt="${marker.publicationTitle}" class="slider-image" />
+              <img :src="picture.Url" :alt="`${marker.publicationTitle}`" class="swiper-image" />
             </swiper-slide>
           </swiper>
+          <div :style="{ marginTop: '20px' }">
+            <p>Straße: {{ marker.address.street ? marker.address.street : noData }}</p>
+            <p v-if="marker.address.city">
+              Stadt: {{ marker.address.zipCode ? marker.address.zipCode : '' }}
+              {{ marker.address.city }}
+            </p>
+            <p>Preis: {{ marker.price ? '€' + marker.price : noData }}</p>
+            <p>
+              Eigenschaftskategorie:
+              {{ marker.propertyCategory ? marker.propertyCategory : noData }}
+            </p>
+            <p>Wohnbereich: {{ marker.livingArea ? marker.livingArea + ' m²' : noData }}</p>
+            <p>Anzahl der Zimmer: {{ marker.rooms ? marker.rooms : noData }}</p>
+          </div>
         </l-popup>
       </l-marker>
     </l-map>
@@ -52,12 +77,13 @@ const url = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 const zoom = 13
 const center = [46.948, 7.4474]
 
+// Popup settings
+const modules = [Navigation]
+const noData = 'keine Daten verfügbar'
+
 const openPopup = (event) => {
   event.target.openPopup()
 }
-
-// Swiper modules
-const modules = [Navigation]
 
 onMounted(() => {
   realestateStore.getItems()
@@ -65,11 +91,6 @@ onMounted(() => {
 </script>
 
 <style>
-.leaflet-div-icon {
-  border: none;
-  background: transparent;
-}
-
 .marker-wrapper {
   font-weight: bold;
   text-align: center;
@@ -79,15 +100,54 @@ onMounted(() => {
   box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.33);
 }
 
-.slider-image {
-  width: auto;
-  max-height: 120px;
-  pointer-events: none;
-  user-select: none;
+/* Leaflet styles */
+.leaflet-container a.leaflet-popup-close-button {
+  font-size: 30px;
+  margin: 7px;
+  color: #444;
+}
+
+.leaflet-div-icon {
+  border: none;
+  background: transparent;
+}
+
+.leaflet-popup-content p {
+  margin: 6px 0 0 0;
+}
+
+/* Swiper styles */
+.swiper {
+  min-height: 200px;
+}
+
+.swiper-wrapper {
+  max-height: 230px;
 }
 
 .swiper-slide {
   display: flex;
   justify-content: center;
+}
+
+.swiper-image {
+  width: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  width: 30px;
+  height: 30px;
+  background-color: #000;
+  border-radius: 50%;
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
 }
 </style>
